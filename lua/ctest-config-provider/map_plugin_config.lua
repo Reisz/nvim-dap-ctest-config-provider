@@ -3,6 +3,7 @@
 --- @field test_dirs string[]
 --- @field timeout_ms number
 --- @field templates ctest-config-provider.Mapping[]
+--- @field ft_filter {[string]: boolean}?
 
 --- @type ctest-config-provider.Config
 local default_config = {
@@ -10,6 +11,7 @@ local default_config = {
 	test_dirs = { "build", "build/debug" },
 	timeout_ms = 5000,
 	templates = {},
+	ft_filter = { "c", "cpp" },
 }
 
 --- @param type string Adapter name
@@ -32,6 +34,16 @@ return function(opts)
 		if type(v) == "string" then
 			mapped_opts.templates[i] = create_simple_template(v)
 		end
+	end
+
+	if #mapped_opts.ft_filter > 0 then
+		local ft_filter = {}
+		for _, v in ipairs(mapped_opts.ft_filter) do
+			ft_filter[v] = true
+		end
+		mapped_opts.ft_filter = ft_filter
+	else
+		mapped_opts.ft_filter = nil
 	end
 
 	---@cast mapped_opts ctest-config-provider.MappedConfig

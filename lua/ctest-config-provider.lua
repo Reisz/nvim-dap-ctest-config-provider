@@ -13,6 +13,7 @@ local M = {}
 --- @field test_dirs string[] ctest test directory search list relative to NVIM CWD. Results from every existing folder are combined to form the final list.
 --- @field timeout_ms number Timeout of ctest invocation in milliseconds
 --- @field templates (string | ctest-config-provider.Mapping)[] List of debugee configuration mappings. Use a string to get a simple mapping to that debugger type.
+--- @field ft_filter string[] Skip, if the current buffer is not one of the listed filetypes. Leave empty to never skip.
 
 --- @param opts ctest-config-provider.Config
 M.setup = function(opts)

@@ -30,6 +30,10 @@ end
 --- @param opts ctest-config-provider.MappedConfig
 --- @return dap.Configuration[]
 return function(opts)
+	if opts.ft_filter and not opts.ft_filter[vim.bo.filetype] then
+		return {}
+	end
+
 	local result = {}
 
 	for _, test_dir in ipairs(opts.test_dirs) do
