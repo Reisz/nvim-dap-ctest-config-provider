@@ -4,7 +4,7 @@ local M = {}
 --- @field name string Name of the test
 --- @field program string Test executable
 --- @field args string Arguments for the test executable
---- @field cwd string Working directory for the test
+--- @field cwd? string Working directory for the test
 
 --- @alias ctest-config-provider.Mapping fun(ctest-config-provider.TestInfo): dap.Configuration Mapping from test info to debugee configuration
 
