@@ -1,7 +1,4 @@
----@class ctest-config-provider.MappedConfig
---- @field ctest_command string
---- @field test_dirs string[]
---- @field timeout_ms number
+---@class ctest-config-provider.MappedConfig: ctest-config-provider.Config
 --- @field templates ctest-config-provider.Mapping[]
 --- @field ft_filter {[string]: boolean}?
 
@@ -12,6 +9,7 @@ local default_config = {
 	timeout_ms = 5000,
 	templates = {},
 	ft_filter = { "c", "cpp" },
+	test_filter = "line",
 }
 
 --- @param type string Adapter name

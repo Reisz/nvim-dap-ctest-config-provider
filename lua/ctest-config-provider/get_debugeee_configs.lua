@@ -27,6 +27,35 @@ local function async_system(cmd, opts)
 	return result
 end
 
+---@class ctest-config-provider.Test
+---@field info ctest-config-provider.TestInfo
+---@field file string
+---@field line integer
+
+---@return ctest-config-provider.Test
+local function map_test(ctest_test)
+	local test = { info = {} }
+	test.info.name = ctest_test.name
+
+	test.info.program = ctest_test.command[1]
+	table.remove(ctest_test.command, 1)
+	test.info.args = ctest_test.command
+
+	for _, property in ipairs(ctest_test.properties) do
+		if property.name == "WORKING_DIRECTORY" then
+			test.info.cwd = property.value
+		end
+
+		if property.name == "DEF_SOURCE_LINE" then
+			local file, line = string.match(property.value, "([^:]*):([^:]*)")
+			test.file = file
+			test.line = tonumber(line)
+		end
+	end
+
+	return test
+end
+
 --- @param opts ctest-config-provider.MappedConfig
 --- @return dap.Configuration[]
 return function(opts)
@@ -34,8 +63,8 @@ return function(opts)
 		return {}
 	end
 
-	local result = {}
-
+	---@type ctest-config-provider.Test[]
+	local tests = {}
 	for _, test_dir in ipairs(opts.test_dirs) do
 		local stat = vim.uv.fs_stat(test_dir)
 		if stat and bit.band(stat.mode, S_IFMT) == S_IFDIR then
@@ -50,24 +79,47 @@ return function(opts)
 			assert(ctest_info.version.major == 1 and ctest_info.version.minor == 0, "Unexpected version")
 
 			for _, test in ipairs(ctest_info.tests) do
-				local test_info = {}
-				test_info.name = test.name
-
-				test_info.program = test.command[1]
-				table.remove(test.command, 1)
-				test_info.args = test.command
-
-				for _, property in ipairs(test.properties) do
-					if property.name == "WORKING_DIRECTORY" then
-						test_info.cwd = property.value
-					end
-				end
-
-				for _, v in ipairs(opts.templates) do
-					table.insert(result, v(vim.deepcopy(test_info)))
-				end
+				table.insert(tests, map_test(test))
 			end
 		end
+	end
+
+	---@type ctest-config-provider.Config[]
+	local result = {}
+
+	---@param test ctest-config-provider.Test
+	local function insert_mapped(test)
+		for _, map in ipairs(opts.templates) do
+			table.insert(result, map(vim.deepcopy(test.info)))
+		end
+	end
+
+	local file = vim.api.nvim_buf_get_name(0)
+	local line = vim.fn.line(".")
+	if opts.test_filter == "line" then
+		table.sort(tests, function(lhs, rhs)
+			return lhs.line < rhs.line
+		end)
+		local prev = nil
+		for _, v in ipairs(tests) do
+			if v.file == file and v.line > line and prev then
+				insert_mapped(prev)
+				return result
+			end
+			prev = v
+		end
+	elseif opts.test_filter == "file" then
+		for _, v in ipairs(tests) do
+			if v.file == file then
+				insert_mapped(v)
+			end
+		end
+	elseif opts.test_filter == "none" then
+		for _, v in ipairs(tests) do
+			insert_mapped(v)
+		end
+	else
+		assert(false, "Unknown test_filter value: " .. opts.test_filter)
 	end
 
 	return result
