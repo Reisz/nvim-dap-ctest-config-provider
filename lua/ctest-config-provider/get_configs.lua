@@ -61,7 +61,7 @@ return function(opts)
 		end
 
 		for _, v in ipairs(opts.templates) do
-			table.insert(result, v(test_info))
+			table.insert(result, v(vim.deepcopy(test_info)))
 		end
 	end
 	return result
