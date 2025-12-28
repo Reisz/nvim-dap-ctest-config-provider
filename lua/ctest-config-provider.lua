@@ -10,14 +10,14 @@ local M = {}
 
 --- @class ctest-config-provider.Config
 --- @field ctest_command string ctest program location
---- @field test_dir string ctest test directory relative to NVIM CWD
+--- @field test_dirs string[] ctest test directory search list relative to NVIM CWD. Results from every existing folder are combined to form the final list.
 --- @field timeout_ms number Timeout of ctest invocation in milliseconds
 --- @field templates (string | ctest-config-provider.Mapping)[] List of debugee configuration mappings. Use a string to get a simple mapping to that debugger type.
 
 --- @type ctest-config-provider.Config
 local default_config = {
 	ctest_command = "ctest",
-	test_dir = "build",
+	test_dirs = { "build", "build/debug" },
 	timeout_ms = 5000,
 	templates = {},
 }
