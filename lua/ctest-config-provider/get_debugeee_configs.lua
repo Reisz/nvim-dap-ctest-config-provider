@@ -27,7 +27,7 @@ local function async_system(cmd, opts)
 	return result
 end
 
---- @param opts ctest-config-provider.Config
+--- @param opts ctest-config-provider.MappedConfig
 --- @return dap.Configuration[]
 return function(opts)
 	local result = {}
